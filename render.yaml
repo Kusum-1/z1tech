@@ -1,15 +1,20 @@
 services:
   - type: web
     name: laravel-app
-    env: docker
-    region: oregon
-    plan: free
-    dockerfilePath: ./Dockerfile
+    runtime: docker
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
-      - key: APP_KEY
-        sync: false
-staticPublishPath: public
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan config:clear
+      php artisan cache:clear
+      php artisan view:clear
+      php artisan route:clear
+      php artisan migrate --force
+    startCommand: |
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache

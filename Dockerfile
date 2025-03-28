@@ -1,33 +1,33 @@
 # Use official PHP with Apache
 FROM php:8.2-apache
 
-# Set working directory
-WORKDIR /var/www/html
-
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
     curl \
-    git \
-    libpq-dev \
+    libpng-dev \
     libonig-dev \
-    libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql
+    libxml2-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Set working directory inside the container
+WORKDIR /var/www/html
 
-# Copy Laravel project files
+# Copy Laravel project files to container
 COPY . .
 
-# Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Set Laravel permissions
+# Set permissions for storage and bootstrap/cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expose port
+# Change Apache root directory to Laravel `public` folder
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
+# Enable Apache mod_rewrite for Laravel
+RUN a2enmod rewrite
+
+# Expose port 80 for HTTP traffic
 EXPOSE 80
 
-# Start Apache
+# Start Apache in the foreground
 CMD ["apache2-foreground"]
