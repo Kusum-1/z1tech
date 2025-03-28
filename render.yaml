@@ -11,14 +11,12 @@ services:
       rm -rf vendor composer.lock
       curl -sS https://getcomposer.org/installer | php
       mv composer.phar /usr/local/bin/composer
-      composer install --no-dev --optimize-autoloader
-      php artisan config:clear
+      /usr/local/bin/composer install --no-dev --optimize-autoloader
+      php artisan key:generate
       php artisan cache:clear
-      php artisan view:clear
-      php artisan route:clear
+      php artisan config:clear
       php artisan migrate --force
+      chmod -R 775 storage bootstrap/cache
+      chown -R www-data:www-data storage bootstrap/cache
     startCommand: |
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
       php artisan serve --host 0.0.0.0 --port 10000
