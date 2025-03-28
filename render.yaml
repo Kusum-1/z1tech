@@ -12,3 +12,4 @@ services:
         value: false
       - key: APP_KEY
         sync: false
+staticPublishPath: public
